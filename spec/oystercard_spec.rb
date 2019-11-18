@@ -6,6 +6,10 @@ describe Oystercard do
     it "should have an initial balance of 0" do
       expect(subject.balance).to eq(0)
     end
+
+    it "is initially not in journey" do
+      expect(subject).not_to be_in_journey
+    end
   end
 
   describe "#top_up" do
@@ -32,5 +36,31 @@ describe Oystercard do
 
   end
 
+  describe "#touch_in" do
+    it "should set to in journey after touching in" do
+      subject.touch_in 
+      expect(subject.in_journey?).to eq(true)
+    end
+  end
 
+  describe "#touch_out" do
+    it "should not be in journey after touching out" do
+      subject.touch_in
+      subject.touch_out
+      expect(subject.in_journey?).to eq(false)
+    end
+  end
+
+  describe "#in_journey?" do
+  it "should true after touching in" do
+    subject.touch_in
+    expect(subject).to be_in_journey
+  end
+end
+
+
+
+  # touch in
+  # touch out
+  # in_journey
 end
