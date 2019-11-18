@@ -11,6 +11,11 @@ class Oystercard
   def top_up(amount)
     raise RuntimeError, "Balance cannot exceed £#{DEFAULT_LIMIT}" if (amount + @balance) > DEFAULT_LIMIT
     @balance += amount
-  end 
+  end
+
+  def deduct(amount)
+    fail 'insufficient funds' if (@balance - amount) < 0
+    @balance -= amount
+  end
 
 end

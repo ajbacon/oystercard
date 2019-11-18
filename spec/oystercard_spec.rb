@@ -19,4 +19,18 @@ describe Oystercard do
       expect { subject.top_up(topup) }.to raise_error RuntimeError
     end
   end
+
+  describe "#deduct" do
+    it "Deduct given quanitity from balance" do
+      subject.top_up(5)
+      expect{subject.deduct(5)}. to change{subject.balance} .by(-5)
+    end
+
+    it "Prevent deduction if balance would be negative" do
+      expect{subject.deduct(5)}. to raise_error "insufficient funds"
+    end
+
+  end
+
+
 end
