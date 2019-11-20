@@ -1,74 +1,52 @@
-require 'oystercard'
+class Oystercard
 
-describe Oystercard do
+  attr_reader :balance, :entry_station, :journeys_list
 
-  describe "initialize" do
-    it "should have an initial balance of 0" do
-      expect(subject.balance).to eq(0)
-    end
+  DEFAULT_BALANCE = 0
+  BALANCE_LIMIT = 90
+  MINIMUM_BALANCE = 1
+  FARE = 3
 
-    it "is initially not in journey" do
-      expect(subject).not_to be_in_journey
-    end
+
+  def initialize(balance = DEFAULT_BALANCE)
+    @balance = balance
+    @journeys_list = []
   end
 
-  describe "#top_up" do
-    it "Should top up card with balance passed in as argument" do
-      ORIGINAL = subject.balance
-      expect{subject.top_up(5)}. to change {subject.balance} .by(5)
-    end
-
-    it "should not allow to top up to more than 90" do
-      topup = Oystercard::DEFAULT_LIMIT + 1
-      expect { subject.top_up(topup) }.to raise_error RuntimeError
-    end
+  def top_up(money)
+    raise "Limit of £#{BALANCE_LIMIT} has been exceeded" if limit_reached?
+    @balance += money
   end
 
-  describe "#deduct" do
-    it "Deduct given quanitity from balance" do
-      subject.top_up(5)
-      expect{subject.deduct(5)}. to change{subject.balance} .by(-5)
-    end
-
-    it "Prevent deduction if balance would be negative" do
-      expect{subject.deduct(5)}. to raise_error "insufficient funds"
-    end
-
+  def touch_in(entry_station)
+    raise "You need a minimum of £#{Oystercard::MINIMUM_BALANCE} on your card" if insufficient_funds?
+    raise "You never touched out" if in_journey?
+    @entry_station = entry_station
   end
 
-  describe "#touch_in" do
-    let(:oystercard) { double (:oystercard)}
-    it "should set to in journey after touching in" do
-      subject.top_up(5)
-      subject.touch_in
-      expect(subject.in_journey?).to eq(true)
-    end
-
-
-    it "Prevent entry if money on card is less than the minimum fare." do
-      expect{subject.touch_in}. to raise_error "insufficient funds for entry" do
-    end
-  end
+  def touch_out(exit_station)
+    raise "You have not touched in" if !in_journey?
+    deduct(FARE)
+    @journeys_list << {entry_station: @entry_station, exit_station: exit_station}
+    @entry_station = nil
   end
 
-  describe "#touch_out" do
-    it "should not be in journey after touching out" do
-      subject.touch_in
-      subject.touch_out
-      expect(subject.in_journey?).to eq(false)
-    end
+  private
+
+  def limit_reached?
+    @balance >= BALANCE_LIMIT
   end
 
-  describe "#in_journey?" do
-  it "should true after touching in" do
-    subject.touch_in
-    expect(subject).to be_in_journey
+  def insufficient_funds?
+    @balance < MINIMUM_BALANCE
   end
-end
 
+  def in_journey?
+    @entry_station != nil
+  end
 
+  def deduct(money)
+    @balance -= money
+  end
 
-  # touch in
-  # touch out
-  # in_journey
 end
